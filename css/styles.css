@@ -609,3 +609,30 @@ footer {
 .notification.error {
     background: #e74c3c;
 }
+@media screen and (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);  /* 平板上显示两列 */
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .gallery-item {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .gallery {
+        grid-template-columns: 1fr;  /* 手机上显示单列 */
+    }
+    
+    .header {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .upload-zone {
+        margin: 10px;
+        padding: 10px;
+    }
+}

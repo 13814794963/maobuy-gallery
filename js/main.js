@@ -266,3 +266,127 @@ function clearGallery() {
 
 // 添加清除按钮事件（如果需要）
 document.getElementById('clearGallery')?.addEventListener('click', clearGallery);
+
+// 文件处理相关代码
+class FileHandler {
+    constructor() {
+        this.maxSize = 5 * 1024 * 1024; // 5MB
+        this.allowedTypes = ['image/jpeg', 'image/png'];
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        // 点击上传
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            this.handleFiles(e.target.files);
+        });
+
+        // 拖拽上传
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            this.handleFiles(e.dataTransfer.files);
+        });
+    }
+
+    validateFile(file) {
+        if (!this.allowedTypes.includes(file.type)) {
+            this.showNotification('只支持 JPG 和 PNG 格式的图片！', 'error');
+            return false;
+        }
+
+        if (file.size > this.maxSize) {
+            this.showNotification('文件大小不能超过 5MB！', 'error');
+            return false;
+        }
+
+        return true;
+    }
+
+    handleFiles(files) {
+        Array.from(files).forEach(file => {
+            if (this.validateFile(file)) {
+                this.uploadFile(file);
+            }
+        });
+    }
+
+    uploadFile(file) {
+        // 显示进度条
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = progressBar.querySelector('.progress-fill');
+        const progressText = progressBar.querySelector('.progress-text');
+        
+        progressBar.style.display = 'block';
+        
+        // 模拟上传进度
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 5;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${progress}%`;
+
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    this.showNotification('上传成功！', 'success');
+                    this.addImageToGallery(file);
+                }, 500);
+            }
+        }, 100);
+    }
+
+    addImageToGallery(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const gallery = document.getElementById('gallery');
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = file.name;
+            
+            const caption = document.createElement('div');
+            caption.className = 'caption';
+            caption.textContent = file.name;
+            
+            div.appendChild(img);
+            div.appendChild(caption);
+            gallery.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    new FileHandler();
+});

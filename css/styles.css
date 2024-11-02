@@ -72,22 +72,22 @@ header p {
 }
 
 .gallery {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
-    columns: 2;  /* 设置为两列 */
-    column-gap: 40px;
+    display: grid;
+    gap: 20px;
+    padding: 20px;
 }
 
 .gallery-item {
-    break-inside: avoid; /* 防止图片被分割 */
-    margin-bottom: 40px;
     position: relative;
-    border-radius: 15px;
+    width: 100%;
     overflow: hidden;
-    transform: translateY(0);
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
 }
 
 /* 奇数项和偶数项的不同效果 */
@@ -134,12 +134,19 @@ header p {
 /* 响应式调整 */
 @media (max-width: 768px) {
     .gallery {
-        columns: 1;  /* 移动端改为单列 */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 10px;
     }
     
-    .gallery-item:nth-child(odd),
-    .gallery-item:nth-child(even) {
-        transform: translateY(0);
+    .gallery-item {
+        aspect-ratio: 1;
+    }
+    
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 }
 

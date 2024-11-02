@@ -252,7 +252,7 @@ dropZone.addEventListener('drop', function(e) {
 
 // 添加清除所有数据的功能（可选）
 function clearGallery() {
-    if (confirm('确定要清除所有照片吗？此操作不可���复！')) {
+    if (confirm('确定要清除所有��吗？此操作不可复！')) {
         images = [];
         localStorage.removeItem('galleryImages');
         initGallery();
@@ -273,6 +273,157 @@ class FileHandler {
         this.maxSize = 5 * 1024 * 1024; // 5MB
         this.allowedTypes = ['image/jpeg', 'image/png'];
         this.setupEventListeners();
+        this.loadImages(); // 加载所有图片（包括默认图片和上传的图片）
+    }
+
+    // 加载所有图片
+    loadImages() {
+        // 加载默认图片
+        const defaultImages = [
+            { src: './images/温柔的微笑.jpg', caption: '温柔的微笑' },
+            { src: './images/舞台演出.jpg', caption: '舞台演出' }
+        ];
+
+        // 加载本地存储的图片
+        const savedImages = JSON.parse(localStorage.getItem('galleryImages') || '[]');
+        
+        // 合并默认图片和保存的图片
+        const allImages = [...defaultImages, ...savedImages];
+        
+        // 清空画廊
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = '';
+
+        // 显示所有图片
+        allImages.forEach(imageData => {
+            this.createGalleryItem(imageData.src, imageData.caption);
+        });
+    }
+
+    // 保存图片到 localStorage
+    saveImage(src, caption) {
+        try {
+            const savedImages = JSON.parse(localStorage.getItem('galleryImages') || '[]');
+            savedImages.push({ src, caption });
+            
+            // 检查数据大小
+            const dataSize = new Blob([JSON.stringify(savedImages)]).size;
+            console.log('Data size:', dataSize / 1024 / 1024, 'MB');
+            
+            if (dataSize > 4 * 1024 * 1024) { // 4MB 限制
+                this.showNotification('存储空间不足，请删除一些图片', 'error');
+                return false;
+            }
+            
+            localStorage.setItem('galleryImages', JSON.stringify(savedImages));
+            console.log('保存成功：', caption);
+            return true;
+        } catch (error) {
+            console.error('保存失败：', error);
+            this.showNotification('保存失败：' + error.message, 'error');
+            return false;
+        }
+    }
+
+    // 创建图片项
+    createGalleryItem(src, caption) {
+        const gallery = document.getElementById('gallery');
+        const div = document.createElement('div');
+        div.className = 'gallery-item';
+        
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = caption;
+        
+        const captionDiv = document.createElement('div');
+        captionDiv.className = 'caption';
+        captionDiv.textContent = caption;
+        
+        // 添加删除按钮
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.deleteImage(src);
+            div.remove();
+        };
+        
+        div.appendChild(img);
+        div.appendChild(captionDiv);
+        div.appendChild(deleteBtn);
+        gallery.appendChild(div);
+    }
+
+    // 删除图片
+    deleteImage(src) {
+        const savedImages = JSON.parse(localStorage.getItem('galleryImages') || '[]');
+        const updatedImages = savedImages.filter(img => img.src !== src);
+        localStorage.setItem('galleryImages', JSON.stringify(updatedImages));
+    }
+
+    // 处理上传的新图片
+    addImageToGallery(file) {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            try {
+                const src = e.target.result;
+                const caption = file.name;
+                
+                // 压缩图片
+                this.compressImage(src, (compressedSrc) => {
+                    if (this.saveImage(compressedSrc, caption)) {
+                        this.createGalleryItem(compressedSrc, caption);
+                        this.showNotification('上传成功！', 'success');
+                    }
+                });
+            } catch (error) {
+                console.error('处理图片失败：', error);
+                this.showNotification('处理图片失败：' + error.message, 'error');
+            }
+        };
+        
+        reader.onerror = (error) => {
+            console.error('读取文件失败：', error);
+            this.showNotification('读取文件失败', 'error');
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    // 压缩图片
+    compressImage(src, callback) {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置压缩后的尺寸
+            let width = img.width;
+            let height = img.height;
+            const maxSize = 800; // 最大尺寸
+            
+            if (width > height && width > maxSize) {
+                height = (height * maxSize) / width;
+                width = maxSize;
+            } else if (height > maxSize) {
+                width = (width * maxSize) / height;
+                height = maxSize;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 绘制并压缩图片
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 转换为 base64，使用较低的质量
+            const compressedSrc = canvas.toDataURL('image/jpeg', 0.6);
+            callback(compressedSrc);
+        };
+        
+        img.src = src;
     }
 
     setupEventListeners() {
@@ -350,34 +501,6 @@ class FileHandler {
                 }, 500);
             }
         }, 100);
-    }
-
-    addImageToGallery(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const gallery = document.getElementById('gallery');
-            const div = document.createElement('div');
-            div.className = 'gallery-item';
-            
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = file.name;
-            
-            // 添加加载事件
-            img.onload = () => {
-                // 图片加载完成后再显示
-                div.style.opacity = '1';
-            };
-            
-            const caption = document.createElement('div');
-            caption.className = 'caption';
-            caption.textContent = file.name;
-            
-            div.appendChild(img);
-            div.appendChild(caption);
-            gallery.appendChild(div);
-        };
-        reader.readAsDataURL(file);
     }
 
     showNotification(message, type) {

@@ -429,7 +429,7 @@ footer {
     border-radius: 4px;
 }
 
-/* 删除模式样式优化 */
+/* 删���模式样式优化 */
 .gallery-item.delete-mode {
     position: relative;
     cursor: pointer;
@@ -642,4 +642,85 @@ footer {
         margin: 10px;
         padding: 10px;
     }
+}
+
+/* 上传区域样式 */
+.upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover {
+    border-color: #666;
+    background: #f9f9f9;
+}
+
+.upload-zone.dragover {
+    border-color: #2196F3;
+    background: #e3f2fd;
+}
+
+.upload-text {
+    color: #666;
+    font-size: 16px;
+}
+
+.upload-limits {
+    color: #999;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+/* 提示框样式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    color: white;
+    display: none;
+    z-index: 1000;
+}
+
+.notification.success {
+    background: #4CAF50;
+}
+
+.notification.error {
+    background: #f44336;
+}
+
+/* 进度条样式 */
+.progress-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 20px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2196F3;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: 12px;
+    line-height: 20px;
 }

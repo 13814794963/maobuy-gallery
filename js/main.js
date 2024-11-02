@@ -252,7 +252,7 @@ dropZone.addEventListener('drop', function(e) {
 
 // 添加清除所有数据的功能（可选）
 function clearGallery() {
-    if (confirm('确定要清除所有照片吗？此操作不可恢复！')) {
+    if (confirm('确定要清除所有照片吗？此操作不可���复！')) {
         images = [];
         localStorage.removeItem('galleryImages');
         initGallery();
@@ -362,6 +362,12 @@ class FileHandler {
             const img = document.createElement('img');
             img.src = e.target.result;
             img.alt = file.name;
+            
+            // 添加加载事件
+            img.onload = () => {
+                // 图片加载完成后再显示
+                div.style.opacity = '1';
+            };
             
             const caption = document.createElement('div');
             caption.className = 'caption';
